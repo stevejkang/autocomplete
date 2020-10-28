@@ -444,7 +444,9 @@ export default function autocomplete<T extends AutocompleteItem>(settings: Autoc
                 }, EventTrigger.Keyboard);
             }, trigger === EventTrigger.Keyboard ? debounceWaitMs : 0);
         } else {
-            clear();
+            if (showOnFocus) {
+                startFetch(EventTrigger.Focus);
+            } else clear();
         }
     }
 
