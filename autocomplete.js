@@ -1,8 +1,8 @@
 (function (global, factory) {
   typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
   typeof define === 'function' && define.amd ? define(factory) :
-  (global = global || self, global.autocomplete = factory());
-}(this, function () { 'use strict';
+  (global = typeof globalThis !== 'undefined' ? globalThis : global || self, global.autocomplete = factory());
+}(this, (function () { 'use strict';
 
   /*
    * https://github.com/kraaden/autocomplete
@@ -18,6 +18,7 @@
       var mobileFirefox = userAgent.indexOf("Firefox") !== -1 && userAgent.indexOf("Mobile") !== -1;
       var debounceWaitMs = settings.debounceWaitMs || 0;
       var preventSubmit = settings.preventSubmit || false;
+      var disableAutoSelect = settings.disableAutoSelect || false;
       // 'keyup' event will not be fired on Mobile Firefox, so we have to use 'input' event instead
       var keyUpEventName = mobileFirefox ? "input" : "keyup";
       var items = [];
@@ -290,7 +291,7 @@
                   clear();
               }
               else {
-                  if (!containerDisplayed || items.length < 1) {
+                  if (!containerIsDisplayed || items.length < 1) {
                       return;
                   }
                   keyCode === 38 /* Up */
@@ -320,10 +321,9 @@
           }
       }
       function startFetch(trigger) {
-          // if multiple keys were pressed, before we get update from server,
-          // this may cause redrawing our autocomplete multiple times after the last key press.
-          // to avoid this, the number of times keyboard was pressed will be
-          // saved and checked before redraw our autocomplete box.
+          // If multiple keys were pressed, before we get an update from server,
+          // this may cause redrawing autocomplete multiple times after the last key was pressed.
+          // To avoid this, the number of times keyboard was pressed will be saved and checked before redraw.
           var savedKeypressCounter = ++keypressCounter;
           var val = input.value;
           if (val.length >= minLen || trigger === 1 /* Focus */) {
@@ -333,10 +333,10 @@
                       if (keypressCounter === savedKeypressCounter && elements) {
                           items = elements;
                           inputValue = val;
-                          selected = items.length > 0 ? items[0] : undefined;
+                          selected = (items.length < 1 || disableAutoSelect) ? undefined : items[0];
                           update();
                       }
-                  }, 0 /* Keyboard */);
+                  }, trigger);
               }, trigger === 0 /* Keyboard */ ? debounceWaitMs : 0);
           }
           else {
@@ -390,5 +390,5 @@
 
   return autocomplete;
 
-}));
+})));
 //# sourceMappingURL=autocomplete.js.map
